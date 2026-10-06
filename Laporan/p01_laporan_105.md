@@ -1,108 +1,54 @@
-# Dokumen Kebutuhan Data Toko Daring Cendekia SA (Sistem E-Commerce)
+# Laporan Praktikum Basis Data - Pertemuan 01
+**Nama:** Syifa   **NIM:** 2301010105   **Kelas:** Ilmu Komputer D  **Tanggal:** 29 September 2026
 
-## 1. Latar Belakang dan Aktivitas Organisasi
-Toko Daring Cendekia SA mengelola katalog produk, pendaftaran pelanggan, pesanan barang, pembayaran, serta pengiriman[cite: 18]. Sistem ini dibangun untuk mencatat transaksi penjualan online secara otomatis, mengelola stok produk, dan memantau status pengiriman pesanan.
+## 1. Tujuan Praktikum
+1. Menyiapkan lingkungan kerja praktikum basis data meliputi instalasi RDBMS (MariaDB/MySQL) dan Git.
+2. Memahami perintah dasar SQL untuk manajemen basis data dan tabel.
+3. Mengelola repositori Git untuk penyimpanan laporan dan kode praktikum secara tersinkronisasi.
+4. Menjalankan skrip SQL awal dan memverifikasi struktur basis data yang dibuat.
 
-## 2. Aktor dan Proses Bisnis
-| Kode | Proses Bisnis | Aktor | Pemicu |
-|---|---|---|---|
-| PB-01 | Mendaftarkan Pelanggan | Pelanggan | Pelanggan membuat akun baru |
-| PB-02 | Mengelola Produk & Stok | Admin Toko | Penambahan atau pembaruan data produk |
-| PB-03 | Membuat Pesanan (Checkout) | Pelanggan | Pelanggan melakukan pemesanan barang |
-| PB-04 | Memproses Pembayaran & Pengiriman | Admin / Kurir | Pelanggan mengunggah bukti bayar |
-| PB-05 | Menyusun Laporan Penjualan | Pemilik Toko | Awal bulan |
+## 2. Ringkasan Dasar Teori
+Basis data adalah kumpulan data terstruktur yang disimpan secara elektronik dan dikelola oleh Database Management System (DBMS). DBMS seperti MariaDB/MySQL memungkinkan pengguna untuk membuat, membaca, memperbarui, dan menghapus data (CRUD) menggunakan Data Definition Language (DDL) dan Data Manipulation Language (DML). Git digunakan sebagai sistem pengontrol versi (Version Control System) untuk mencatat riwayat perubahan berkas proyek dan mempermudah kolaborasi.
 
-## 3. Dokumen Sumber yang Dianalisis
-Dokumen sumber utama yang dianalisis adalah **Bukti Pesanan & Invoice Penjualan**:
+## 3. Hasil Langkah Percobaan
+![Verifikasi Lingkungan Kerja](img/p01_lingkungan_25430105.png)
+*Gambar 1: Hasil verifikasi status server MariaDB dan eksekusi skrip lingkungan kerja p01.*
 
---------------------------------------------------
-TOKO DARING CENDEKIA SA
-Invoice Penjualan Online
---------------------------------------------------
-No. Pesanan   : INV-202610-0012
-Tanggal Order : 06-10-2026 14:00
-Pelanggan     : Syifa (ID: PLG-0105 / HP: 08123456789)
-Alamat Kirim  : Jl. Metro No. 105, Lampung
---------------------------------------------------
-Kode Produk | Nama Produk           | Qty | Harga Satuan | Subtotal
---------------------------------------------------
-PRD-001     | Kemeja Casual Size M  | 2   | Rp150.000    | Rp300.000
-PRD-005     | Sepatu Sneaker 42     | 1   | Rp250.000    | Rp250.000
---------------------------------------------------
-Ongkos Kirim : Rp20.000
-Total Bayar  : Rp570.000
-Status       : Dikirim
---------------------------------------------------
+## 4. Jawaban Titik Analisis
+* **Titik Analisis 1**: Perintah `SHOW DATABASES;` digunakan untuk menampilkan seluruh daftar basis data yang ada di server, sedangkan `USE <nama_db>;` berfungsi untuk memilih basis data mana yang akan digunakan secara aktif sebelum mengeksekusi kueri tabel.
+* **Titik Analisis 2**: Perbedaan utama tipe data `VARCHAR(n)` dan `CHAR(n)` terletak pada efisiensi ruang penyimpanan; `VARCHAR` menyimpan karakter secara fleksibel sesuai panjang teks aktual, sementara `CHAR` mengalokasikan ruang memori secara tetap sesuai batas `n`.
+* **Titik Analisis 3**: Fungsi `PRIMARY KEY` adalah sebagai pengenal unik bagi setiap baris record pada tabel agar tidak terjadi duplikasi data, serta memastikan nilai kolom tersebut tidak boleh bernilai `NULL`.
 
-## 4. Entitas Kandidat dan Elemen Data
-1. **Pelanggan**: id_pelanggan, kode_pelanggan, nama_pelanggan, email_pelanggan, no_hp_pelanggan, alamat_pelanggan[cite: 48].
-2. **Admin**: id_admin, kode_admin, nama_admin, peran_admin[cite: 48].
-3. **Produk**: id_produk, kode_produk, nama_produk, harga_produk, stok_produk, id_kategori.
-4. **Kategori Produk**: id_kategori, nama_kategori.
-5. **Pesanan**: id_pesanan, no_invoice, tgl_pesanan, total_bayar, ongkir, status_pesanan, id_pelanggan[cite: 18, 50].
-6. **Detail Pesanan**: id_pesanan, id_produk, qty_detail, harga_satuan_detail[cite: 48].
+## 5. Hasil Latihan dan Modifikasi
+Telah dilakukan modifikasi skrip SQL awal dengan menambahkan kolom `created_at` bertipe `TIMESTAMP` dengan nilai bawaan `CURRENT_TIMESTAMP` pada tabel utama untuk mencatat waktu pembuatan data secara otomatis.
 
-## 5. Aturan Bisnis
-* **AB-01**: Setiap pesanan memiliki nomor invoice unik dan minimal memuat 1 item produk[cite: 48].
-* **AB-02**: Pembelian produk hanya dapat dilakukan oleh pelanggan yang terdaftar.
-* **AB-03**: Batas maksimal pembelian produk dalam satu transaksi pesanan adalah 8 item ($P+2 = 6+2$)[cite: 50].
-* **AB-04**: Harga produk yang digunakan pada pesanan disimpan per item detail dan tidak berubah meskipun harga produk naik di kemudian hari[cite: 46, 48].
-* **AB-05**: Stok produk tidak boleh bernilai negatif; pesanan ditolak jika qty melebihi stok_produk yang tersedia[cite: 48].
-* **AB-06**: Email dan nomor HP pelanggan bersifat unik dan digunakan untuk verifikasi[cite: 48].
-* **AB-07**: Alamat pengiriman dan ongkos kirim dicatat per transaksi pesanan[cite: 50].
-* **AB-08**: Pesanan otomatis dibatalkan jika pembayaran tidak dilunasi dalam waktu 24 jam.
+## 6. Tugas Mandiri: Milestone Proyek 01
+Membuat skrip penyiapan lingkungan proyek `p01_lingkungan_25430105.sql` yang berisi pembuatan basis data proyek e-commerce, pembuatan tabel awal, serta verifikasi skema basis data.
 
-## 6. Kebutuhan Informasi
-* **KI-01**: Laporan total omset penjualan harian dan bulanan[cite: 48].
-* **KI-02**: Lima produk terlaris berdasarkan kuantitas penjualan per bulan[cite: 48].
-* **KI-03**: Daftar produk dengan stok menipis (di bawah batas minimum)[cite: 48].
-* **KI-04**: Sepuluh pelanggan dengan total belanja terbesar per bulan[cite: 48].
-* **KI-05**: Laporan status pengiriman pesanan (Pending, Lunas, Dikirim, Selesai).
+![Milestone Proyek 01 GitHub](img/p01_milestone_github.png)
+*Gambar 2: Tampilan berkas skrip SQL proyek pada repositori GitHub.*
 
-## 7. Matriks CRUD
-| Proses | Pelanggan | Admin | Produk | Kategori | Pesanan | Detail Pesanan |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|
-| PB-01 Mendaftarkan Pelanggan | C | R | - | - | - | - |
-| PB-02 Mengelola Produk & Stok | - | C, U, D | C, U, D | C, U | - | - |
-| PB-03 Membuat Pesanan | R | R | R, U | R | C | C |
-| PB-04 Memproses Pengiriman | - | R | - | - | U | R |
-| PB-05 Laporan Penjualan | R | R | R | R | R | R |
+## 7. Pembahasan dan Kendala
+* **Kendala**: Server MariaDB sempat gagal terhubung karena port standar (3306) bentrok dengan layanan lain.
+* **Penyelesaian**: Menghentikan layanan yang menggunakan port tersebut melalui Task Manager dan melakukan konfigurasi ulang service MySQL/MariaDB pada XAMPP Control Panel.
 
-## 8. Kamus Data Awal
-| Elemen | Arti | Contoh | Aturan / Format | Penanggung Jawab |
-|---|---|---|---|---|
-| id_pelanggan | ID Primer Pelanggan | 1 | Integer, AUTO_INCREMENT | Admin Toko |
-| kode_pelanggan | Kode Unik Pelanggan | PLG-0105 | Unik, Format PLG-4 digit | Admin Toko[cite: 48] |
-| nama_pelanggan | Nama Lengkap | Syifa | Wajib diisi, Max 100 char | Admin Toko |
-| email_pelanggan | Email Pelanggan | syifa@example.com | Unik, Format Email | Admin Toko[cite: 48] |
-| no_hp_pelanggan | Nomor HP | 08123456789 | Data Pribadi, Akses Terbatas | Pemilik Toko[cite: 48] |
-| alamat_pelanggan | Alamat Utama | Jl. Metro No. 105 | Text | Admin Toko |
-| id_admin | ID Primer Admin | 1 | Integer, AUTO_INCREMENT | Pemilik Toko |
-| kode_admin | Kode Admin | ADM-01 | Unik, 3 karakter | Pemilik Toko |
-| nama_admin | Nama Admin | Syifa | Wajib diisi | Pemilik Toko |
-| id_produk | ID Primer Produk | 1 | Integer, AUTO_INCREMENT | Admin Produk |
-| kode_produk | Kode Produk | PRD-001 | Unik, format PRD-3 digit | Admin Produk |
-| nama_produk | Nama Produk | Kemeja Casual Size M | Wajib diisi | Admin Produk |
-| harga_produk | Harga Jual | 150000 | Decimal >= 0 | Admin Produk |
-| stok_produk | Jumlah Stok | 50 | Integer >= 0 (AB-05) | Admin Produk[cite: 48] |
-| id_kategori | ID Kategori | 1 | Integer, AUTO_INCREMENT | Admin Produk |
-| nama_kategori | Nama Kategori | Pakaian Pria | Wajib diisi | Admin Produk |
-| id_pesanan | ID Transaksi Pesanan | 1 | Integer, AUTO_INCREMENT | Admin Toko |
-| no_invoice | Nomor Invoice | INV-202610-0012 | Unik (AB-01) | Admin Toko |
-| tgl_pesanan | Tanggal Order | 2026-10-06 14:00 | DATETIME | Admin Toko |
-| total_bayar | Total Nilai Transaksi | 570000 | Decimal >= 0 | Admin Toko |
-| ongkir | Biaya Pengiriman | 20000 | Decimal >= 0 (AB-07) | Admin Toko[cite: 50] |
-| status_pesanan | Status Order | Dikirim | ENUM('Pending','Lunas','Dikirim','Selesai') | Admin Toko |
-| qty_detail | Jumlah Beli per Item | 2 | Integer > 0 | Admin Toko |
-| harga_satuan_detail | Harga Saat Transaksi | 150000 | Decimal >= 0 (AB-04) | Admin Toko[cite: 48] |
+## 8. Kesimpulan
+Instalasi dan konfigurasi lingkungan kerja basis data serta pengujian perintah dasar SQL dan Git telah berhasil dilakukan. Seluruh berkas proyek p01 telah tersusun rapi dan terhubung dengan repositori remote GitHub.
 
-## 9. Kebutuhan Non-Fungsional Data
-* **Parameter Personal (NIM 05)**: Parameter $P = (05 \pmod 9) + 1 = 6$[cite: 50].
-* **Volume Transaksi**: Perkiraan volume transaksi harian adalah $40 + 5 \times 6 = 70 \text{ transaksi/hari}$[cite: 50].
-* **Maksimal Pembelian**: Batas maksimal item produk dalam 1 transaksi pesanan adalah $6 + 2 = 8 \text{ item}$[cite: 50].
-* **Retensi Data**: Data transaksi pesanan disimpan minimal selama 5 tahun[cite: 44, 48].
-* **Privasi & Keamanan**: Kolom `no_hp_pelanggan` dan `alamat_pelanggan` bersifat data pribadi (UU PDP) dan hanya boleh diakses oleh Pemilik Toko[cite: 48].
+## 9. Pernyataan Penggunaan AI
+Menggunakan AI (Gemini) untuk membantu menyusun draf laporan praktikum, mengecek tata bahasa Markdown, dan memverifikasi kebenaran sintaks perintah Git.
 
-## 10. Isu Kualitas Data yang Diantisipasi
-* **Perubahan Harga Produk**: Harga dicatat pada tabel detail pesanan agar pesanan lama tidak berubah nilainya saat harga katalog dinaikkan[cite: 46, 48].
-* **Stok Minus**: Validasi server memastikan stok berkurang otomatis saat pesanan dibuat dan menolak pesanan jika stok kurang[cite: 48].
+## 10. Bukti Git
+* **Tautan Repositori**: `https://github.com/syifa040706/basisdata-25430105`
+* **Hash Commit**: `1d34458` (Pesan commit: `p01: setup lingkungan dan laporan praktikum 01`)
+
+## Checklist
+- [x] Identitas Laporan Lengkap
+- [x] Ringkasan Dasar Teori
+- [x] Tangkapan layar hasil percobaan
+- [x] Jawaban Titik Analisis dijawab lengkap
+- [x] Hasil Latihan dan Modifikasi
+- [x] Milestone Proyek 01 terlampir
+- [x] Pembahasan, Kendala, dan Kesimpulan
+- [x] Pernyataan Penggunaan AI
+- [x] Bukti Git terlampir
