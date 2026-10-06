@@ -1,116 +1,108 @@
-# Laporan Praktikum Basis Data - Pertemuan 01
-**Nama:** Syifa   **NPM:** 2301010105   **Kelas:** D   **Tanggal:** 6 Oktober 2026
+# Dokumen Kebutuhan Data Toko Daring Cendekia SA (Sistem E-Commerce)
 
-## 1. Tujuan Praktikum
-1. Menjalankan dan menghentikan layanan MariaDB melalui XAMPP Control Panel serta membaca status dan port layanan[cite: 28].
-2. Terhubung ke server MariaDB melalui klien baris perintah (CLI) dan phpMyAdmin serta memahami perbedaan keduanya[cite: 28].
-3. Mengamankan akun `root` dengan password dan membuat akun kerja terbatas (*least privilege*) untuk satu basis data[cite: 28, 31].
-4. Membuat basis data pertama dan mencatat riwayat pekerjaan ke repositori Git yang terhubung ke GitHub[cite: 28].
+## 1. Latar Belakang dan Aktivitas Organisasi
+Toko Daring Cendekia SA mengelola katalog produk, pendaftaran pelanggan, pesanan barang, pembayaran, serta pengiriman[cite: 18]. Sistem ini dibangun untuk mencatat transaksi penjualan online secara otomatis, mengelola stok produk, dan memantau status pengiriman pesanan.
 
-## 2. Ringkasan Dasar Teori
-DBMS (Database Management System) adalah perangkat lunak yang mengelola penyimpanan, keamanan, dan pengaksesan data secara terorganisasi[cite: 28]. MariaDB menggunakan arsitektur klien-server di mana layanan server (`mysqld`) berjalan di latar belakang pada port TCP 3306 untuk mendengarkan perintah dari klien seperti CLI (`mysql`) atau phpMyAdmin[cite: 29]. Penerapan prinsip *least privilege* sangat penting dalam keamanan basis data, yaitu membatasi hak akses akun pengguna agar hanya dapat mengelola basis data spesifik miliknya demi mencegah kerusakan data sistem maupun data pengguna lain[cite: 31]. Git digunakan sebagai kendali versi (*version control*) untuk mencatat setiap tahap perubahan skrip dan dokumen proyek secara bertahap dan teracak (*trackable*)[cite: 31].
+## 2. Aktor dan Proses Bisnis
+| Kode | Proses Bisnis | Aktor | Pemicu |
+|---|---|---|---|
+| PB-01 | Mendaftarkan Pelanggan | Pelanggan | Pelanggan membuat akun baru |
+| PB-02 | Mengelola Produk & Stok | Admin Toko | Penambahan atau pembaruan data produk |
+| PB-03 | Membuat Pesanan (Checkout) | Pelanggan | Pelanggan melakukan pemesanan barang |
+| PB-04 | Memproses Pembayaran & Pengiriman | Admin / Kurir | Pelanggan mengunggah bukti bayar |
+| PB-05 | Menyusun Laporan Penjualan | Pemilik Toko | Awal bulan |
 
-## 3. Hasil Langkah Percobaan
-### A. Menjalankan Layanan MariaDB
-![Status XAMPP Control Panel](img/p01_xampp_control.png)
-*Gambar 1: Layanan MySQL/MariaDB berhasil dijalankan pada port 3306 melalui XAMPP Control Panel.*[cite: 32]
+## 3. Dokumen Sumber yang Dianalisis
+Dokumen sumber utama yang dianalisis adalah **Bukti Pesanan & Invoice Penjualan**:
 
-### B. Mengakses MariaDB CLI dan Mengamankan Root
-![Koneksi Root CLI](img/p01_cli_root.png)
-*Gambar 2: Verifikasi koneksi awal akun root dan pengecekan versi server MariaDB.*[cite: 32, 33]
+--------------------------------------------------
+TOKO DARING CENDEKIA SA
+Invoice Penjualan Online
+--------------------------------------------------
+No. Pesanan   : INV-202610-0012
+Tanggal Order : 06-10-2026 14:00
+Pelanggan     : Syifa (ID: PLG-0105 / HP: 08123456789)
+Alamat Kirim  : Jl. Metro No. 105, Lampung
+--------------------------------------------------
+Kode Produk | Nama Produk           | Qty | Harga Satuan | Subtotal
+--------------------------------------------------
+PRD-001     | Kemeja Casual Size M  | 2   | Rp150.000    | Rp300.000
+PRD-005     | Sepatu Sneaker 42     | 1   | Rp250.000    | Rp250.000
+--------------------------------------------------
+Ongkos Kirim : Rp20.000
+Total Bayar  : Rp570.000
+Status       : Dikirim
+--------------------------------------------------
 
-```sql
--- Mengamankan akun root
-ALTER USER 'root'@'localhost' IDENTIFIED BY 'PasswordRootAman123!';
-FLUSH PRIVILEGES;
-```[cite: 33]
+## 4. Entitas Kandidat dan Elemen Data
+1. **Pelanggan**: id_pelanggan, kode_pelanggan, nama_pelanggan, email_pelanggan, no_hp_pelanggan, alamat_pelanggan[cite: 48].
+2. **Admin**: id_admin, kode_admin, nama_admin, peran_admin[cite: 48].
+3. **Produk**: id_produk, kode_produk, nama_produk, harga_produk, stok_produk, id_kategori.
+4. **Kategori Produk**: id_kategori, nama_kategori.
+5. **Pesanan**: id_pesanan, no_invoice, tgl_pesanan, total_bayar, ongkir, status_pesanan, id_pelanggan[cite: 18, 50].
+6. **Detail Pesanan**: id_pesanan, id_produk, qty_detail, harga_satuan_detail[cite: 48].
 
-### C. Pembuatan Basis Data dan Akun Kerja
-![Pembuatan User dan DB](img/p01_create_user_db.png)
-*Gambar 3: Eksekusi pembuatan basis data Modul_01 dan user kerja syifa_105.*[cite: 34]
+## 5. Aturan Bisnis
+* **AB-01**: Setiap pesanan memiliki nomor invoice unik dan minimal memuat 1 item produk[cite: 48].
+* **AB-02**: Pembelian produk hanya dapat dilakukan oleh pelanggan yang terdaftar.
+* **AB-03**: Batas maksimal pembelian produk dalam satu transaksi pesanan adalah 8 item ($P+2 = 6+2$)[cite: 50].
+* **AB-04**: Harga produk yang digunakan pada pesanan disimpan per item detail dan tidak berubah meskipun harga produk naik di kemudian hari[cite: 46, 48].
+* **AB-05**: Stok produk tidak boleh bernilai negatif; pesanan ditolak jika qty melebihi stok_produk yang tersedia[cite: 48].
+* **AB-06**: Email dan nomor HP pelanggan bersifat unik dan digunakan untuk verifikasi[cite: 48].
+* **AB-07**: Alamat pengiriman dan ongkos kirim dicatat per transaksi pesanan[cite: 50].
+* **AB-08**: Pesanan otomatis dibatalkan jika pembayaran tidak dilunasi dalam waktu 24 jam.
 
-```sql
--- Membuat basis data praktik
-CREATE DATABASE Modul_01  
-  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+## 6. Kebutuhan Informasi
+* **KI-01**: Laporan total omset penjualan harian dan bulanan[cite: 48].
+* **KI-02**: Lima produk terlaris berdasarkan kuantitas penjualan per bulan[cite: 48].
+* **KI-03**: Daftar produk dengan stok menipis (di bawah batas minimum)[cite: 48].
+* **KI-04**: Sepuluh pelanggan dengan total belanja terbesar per bulan[cite: 48].
+* **KI-05**: Laporan status pengiriman pesanan (Pending, Lunas, Dikirim, Selesai).
 
--- Membuat user kerja dengan password 'syifacantik'
-CREATE USER 'syifa_105'@'localhost' IDENTIFIED BY 'syifacantik';
+## 7. Matriks CRUD
+| Proses | Pelanggan | Admin | Produk | Kategori | Pesanan | Detail Pesanan |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| PB-01 Mendaftarkan Pelanggan | C | R | - | - | - | - |
+| PB-02 Mengelola Produk & Stok | - | C, U, D | C, U, D | C, U | - | - |
+| PB-03 Membuat Pesanan | R | R | R, U | R | C | C |
+| PB-04 Memproses Pengiriman | - | R | - | - | U | R |
+| PB-05 Laporan Penjualan | R | R | R | R | R | R |
 
--- Memberikan hak akses penuh hanya pada basis data Modul_01
-GRANT ALL PRIVILEGES ON Modul_01.* TO 'syifa_105'@'localhost';
-FLUSH PRIVILEGES;
-```[cite: 34]
+## 8. Kamus Data Awal
+| Elemen | Arti | Contoh | Aturan / Format | Penanggung Jawab |
+|---|---|---|---|---|
+| id_pelanggan | ID Primer Pelanggan | 1 | Integer, AUTO_INCREMENT | Admin Toko |
+| kode_pelanggan | Kode Unik Pelanggan | PLG-0105 | Unik, Format PLG-4 digit | Admin Toko[cite: 48] |
+| nama_pelanggan | Nama Lengkap | Syifa | Wajib diisi, Max 100 char | Admin Toko |
+| email_pelanggan | Email Pelanggan | syifa@example.com | Unik, Format Email | Admin Toko[cite: 48] |
+| no_hp_pelanggan | Nomor HP | 08123456789 | Data Pribadi, Akses Terbatas | Pemilik Toko[cite: 48] |
+| alamat_pelanggan | Alamat Utama | Jl. Metro No. 105 | Text | Admin Toko |
+| id_admin | ID Primer Admin | 1 | Integer, AUTO_INCREMENT | Pemilik Toko |
+| kode_admin | Kode Admin | ADM-01 | Unik, 3 karakter | Pemilik Toko |
+| nama_admin | Nama Admin | Syifa | Wajib diisi | Pemilik Toko |
+| id_produk | ID Primer Produk | 1 | Integer, AUTO_INCREMENT | Admin Produk |
+| kode_produk | Kode Produk | PRD-001 | Unik, format PRD-3 digit | Admin Produk |
+| nama_produk | Nama Produk | Kemeja Casual Size M | Wajib diisi | Admin Produk |
+| harga_produk | Harga Jual | 150000 | Decimal >= 0 | Admin Produk |
+| stok_produk | Jumlah Stok | 50 | Integer >= 0 (AB-05) | Admin Produk[cite: 48] |
+| id_kategori | ID Kategori | 1 | Integer, AUTO_INCREMENT | Admin Produk |
+| nama_kategori | Nama Kategori | Pakaian Pria | Wajib diisi | Admin Produk |
+| id_pesanan | ID Transaksi Pesanan | 1 | Integer, AUTO_INCREMENT | Admin Toko |
+| no_invoice | Nomor Invoice | INV-202610-0012 | Unik (AB-01) | Admin Toko |
+| tgl_pesanan | Tanggal Order | 2026-10-06 14:00 | DATETIME | Admin Toko |
+| total_bayar | Total Nilai Transaksi | 570000 | Decimal >= 0 | Admin Toko |
+| ongkir | Biaya Pengiriman | 20000 | Decimal >= 0 (AB-07) | Admin Toko[cite: 50] |
+| status_pesanan | Status Order | Dikirim | ENUM('Pending','Lunas','Dikirim','Selesai') | Admin Toko |
+| qty_detail | Jumlah Beli per Item | 2 | Integer > 0 | Admin Toko |
+| harga_satuan_detail | Harga Saat Transaksi | 150000 | Decimal >= 0 (AB-04) | Admin Toko[cite: 48] |
 
-### D. Konfigurasi phpMyAdmin Mode Cookie
-![Halaman Login phpMyAdmin](img/p01_phpmyadmin_cookie.png)
-*Gambar 4: Halaman login phpMyAdmin dengan autentikasi mode cookie setelah konfigurasi config.inc.php diubah.*[cite: 35]
+## 9. Kebutuhan Non-Fungsional Data
+* **Parameter Personal (NIM 05)**: Parameter $P = (05 \pmod 9) + 1 = 6$[cite: 50].
+* **Volume Transaksi**: Perkiraan volume transaksi harian adalah $40 + 5 \times 6 = 70 \text{ transaksi/hari}$[cite: 50].
+* **Maksimal Pembelian**: Batas maksimal item produk dalam 1 transaksi pesanan adalah $6 + 2 = 8 \text{ item}$[cite: 50].
+* **Retensi Data**: Data transaksi pesanan disimpan minimal selama 5 tahun[cite: 44, 48].
+* **Privasi & Keamanan**: Kolom `no_hp_pelanggan` dan `alamat_pelanggan` bersifat data pribadi (UU PDP) dan hanya boleh diakses oleh Pemilik Toko[cite: 48].
 
-## 4. Jawaban Titik Analisis
-* **Titik Analisis 1:** Meskipun tombol di XAMPP berlabel "MySQL", server yang sebenarnya berjalan adalah MariaDB 10.4[cite: 20]. Dokumentasi MySQL masih relevan untuk perintah SQL umum (seperti DDL, DML, JOIN), tetapi dokumentasi MariaDB wajib dirujuk saat menghadapi fitur khusus, mesin penyimpanan (*storage engine*), pengoperasian akun/plugin autentikasi, serta kode galat spesifik MariaDB[cite: 20, 29].
-* **Titik Analisis 2:** Saat masuk dengan `mysql -u root` tanpa `-p`, muncul pesan `ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: NO)`[cite: 38]. Frasa `(using password: NO)` menandakan bahwa klien mencoba masuk tanpa mengirimkan password sama sekali, padahal akun root sudah diberi password[cite: 38].
-* **Titik Analisis 3:** `information_schema` tetap terlihat oleh user `syifa_105` karena merupakan basis data sistem read-only yang menyediakan metadata tentang struktur objek yang berhak diakses oleh user tersebut[cite: 33, 34]. Sebaliknya, akses ke basis data `mysql` ditolak dengan `ERROR 1044` karena user `syifa_105` tidak diberi hak akses (*grant*) ke basis data internal server tersebut[cite: 34]. Perbedaannya: `ERROR 1044` terjadi ketika koneksi berhasil tetapi akses ke basis data spesifik ditolak, sedangkan `ERROR 1045` terjadi pada tahap autentikasi login awal (username/password salah atau tidak sesuai)[cite: 34, 38].
-* **Titik Analisis 4:** Mode `'cookie'` lebih aman daripada mode `'config'` karena meminta pengguna memasukkan nama pengguna dan password secara manual setiap kali membuka halaman web[cite: 35]. Mode `'config'` menyimpan password langsung secara teks polos (*plain text*) di dalam berkas `config.inc.php`, yang berisiko terbaca oleh pihak tak berwenang jika server terkena celah keamanan[cite: 31, 35].
-
-## 5. Hasil Latihan dan Modifikasi
-1. **Membuat Akun Tamu (Read-Only):**
-```sql
-CREATE USER 'tamu_105'@'localhost' IDENTIFIED BY 'tamu123';
-GRANT SELECT ON Modul_01.* TO 'tamu_105'@'localhost';
-FLUSH PRIVILEGES;
-```[cite: 36]
-Saat mencoba eksekusi `CREATE TABLE uji (id INT);` menggunakan akun `tamu_105`, muncul `ERROR 1142 (42000): CREATE command denied to user 'tamu_105'@'localhost' for table 'uji'`. Galat ini menunjukkan bahwa akun tersebut hanya memiliki izin `SELECT` (membaca) dan ditolak saat mencoba mengubah struktur/perintah DDL[cite: 34, 36].
-
-2. **Skrip Idem-poten (Dapat Dijalankan Berulang Tanpa Galat):**
-```sql
-CREATE DATABASE IF NOT EXISTS Modul_01
-  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
-CREATE USER IF NOT EXISTS 'syifa_105'@'localhost' IDENTIFIED BY 'syifacantik';
-GRANT ALL PRIVILEGES ON Modul_01.* TO 'syifa_105'@'localhost';
-FLUSH PRIVILEGES;
-```[cite: 36]
-
-## 6. Tugas Mandiri: Milestone Proyek 01
-* Tema Proyek: Akademik (Kode Tema: `akad`) [berdasarkan NIM 05][cite: 18]
-* Nama Organisasi Fiktif: SIAKAD Cendekia SA (Inisial: SA - Syifa A)[cite: 37]
-* Basis Data Proyek: `akad_105`[cite: 36]
-* Akun Developer: `dev_105`[cite: 36]
-
-```sql
--- Pembuatan basis data dan user proyek
-CREATE DATABASE IF NOT EXISTS akad_105
-  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
-CREATE USER IF NOT EXISTS 'dev_105'@'localhost' IDENTIFIED BY 'devpass105';
-GRANT ALL PRIVILEGES ON akad_105.* TO 'dev_105'@'localhost';
-FLUSH PRIVILEGES;
-```[cite: 34, 36]
-
-Berkas `.gitignore` telah ditambahkan ke repositori untuk mengabaikan berkas sensitif seperti `*.env` dan file kredensial[cite: 37].
-
-## 7. Pembahasan dan Kendala
-* **Kendala:** Saat pengubahan password `root`, phpMyAdmin mengalami masalah kuis/akses tertolak (`#1045 Access denied`)[cite: 34, 38].
-* **Penyelesaian:** Kendala ini diatasi dengan mengubah opsi autentikasi `$cfg['Servers'][$i]['auth_type']` pada berkas `C:\xampp\phpMyAdmin\config.inc.php` dari `'config'` menjadi `'cookie'`, sehingga phpMyAdmin menampilkan formulir login interaktif[cite: 35, 38].
-
-## 8. Kesimpulan
-Melalui praktikum Pertemuan 1, lingkungan kerja MariaDB pada XAMPP telah berhasil dikonfigurasi secara aman[cite: 28]. Penerapan pengamanan akun `root` dan pembuatan user terbatas (`syifa_105` dan `dev_105`) berhasil mengisolasi hak akses sesuai prinsip *least privilege*[cite: 31, 34]. Selain itu, repositori Git telah berhasil terhubung dengan GitHub sebagai sarana pencatatan perubahan skrip SQL dan pengerjaan milestone proyek secara berkelanjutan[cite: 28, 31].
-
-## 9. Pernyataan Penggunaan AI
-Menggunakan asisten AI (Gemini) untuk membantu menyusun kerangka laporan praktikum, membantu formulasi perintah pengamanan user, serta memverifikasi arti dan perbedaan kode galat SQL[cite: 16].
-
-## 10. Bukti Git
-* **Tautan Repositori:** `https://github.com/syifa105/basisdata-2301010105`[cite: 36]
-* **Hash Commit:** `3f9c2ab` (Pesan commit: `p01: inisialisasi repositori dan skrip lingkungan`)[cite: 36]
-
-## Checklist
-- [x] Identitas Laporan Lengkap (Nama, NIM, Kelas, Tanggal)[cite: 23]
-- [x] Tujuan Praktikum ditulis ulang dengan bahasa sendiri[cite: 23]
-- [x] Ringkasan Dasar Teori dibuat ringkas dan jelas[cite: 23]
-- [x] Tangkapan layar hasil percobaan beserta keterangannya[cite: 23, 25]
-- [x] Jawaban Titik Analisis 1-4 dijawab lengkap[cite: 25]
-- [x] Hasil Latihan & Modifikasi beserta pembahasannya[cite: 23, 25]
-- [x] Milestone Proyek 01 terlampir[cite: 24, 25]
-- [x] Pembahasan, Kendala, dan Kesimpulan disertakan[cite: 24]
-- [x] Pernyataan Penggunaan AI diisi[cite: 24]
-- [x] Bukti Tautan Repositori dan Hash Commit terlampir[cite: 24, 25]
+## 10. Isu Kualitas Data yang Diantisipasi
+* **Perubahan Harga Produk**: Harga dicatat pada tabel detail pesanan agar pesanan lama tidak berubah nilainya saat harga katalog dinaikkan[cite: 46, 48].
+* **Stok Minus**: Validasi server memastikan stok berkurang otomatis saat pesanan dibuat dan menolak pesanan jika stok kurang[cite: 48].
