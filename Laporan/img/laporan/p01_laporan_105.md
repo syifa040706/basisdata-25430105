@@ -1,5 +1,5 @@
 # Laporan Praktikum Basis Data - Pertemuan 01
-**Nama:** Syifa   **NIM:** 2301010105   **Kelas:** Ilmu Komputer A   **Tanggal:** 6 Oktober 2026
+**Nama:** Syifa   **NPM:** 2301010105   **Kelas:** D   **Tanggal:** 6 Oktober 2026
 
 ## 1. Tujuan Praktikum
 1. Menjalankan dan menghentikan layanan MariaDB melalui XAMPP Control Panel serta membaca status dan port layanan[cite: 28].
