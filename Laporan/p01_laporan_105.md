@@ -1,5 +1,5 @@
 # Laporan Praktikum Basis Data - Pertemuan 01
-**Nama:** Syifa   **NIM:** 2301010105   **Kelas:** Ilmu Komputer D  **Tanggal:** 29 September 2026
+**Nama:** Syifa   **NIM:** 23430105   **Kelas:** Ilmu Komputer D  **Tanggal:** 29 September 2026
 
 ## 1. Tujuan Praktikum
 1. Menyiapkan lingkungan kerja praktikum basis data meliputi instalasi RDBMS (MariaDB/MySQL) dan Git.
