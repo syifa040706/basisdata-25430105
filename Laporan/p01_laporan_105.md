@@ -1,6 +1,6 @@
 # Laporan Praktikum Basis Data - Pertemuan 01
 **Nama:** Syifaul Maula
-**NPgitM:** 23430105   
+**NPM:** 23430105   
 **Kelas:** Ilmu Komputer D  
 **Tanggal:** 29 September 2026
 
