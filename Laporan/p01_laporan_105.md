@@ -43,8 +43,7 @@ Menggunakan AI (Gemini) untuk membantu menyusun draf laporan praktikum, mengecek
 
 ## 10. Bukti Git
 * **Tautan Repositori**: [https://github.com/syifa040706/basisdata-25430105](https://github.com/syifa040706/basisdata-25430105)
-* **Hash Commit**: [1d34458](https://github.com/syifa040706/basisdata-25430105/commit/1d34458) (Pesan commit: `p01: setup lingkungan dan laporan praktikum 01`)
-* **Hash Commit**: `1d34458` (Pesan commit: `p01: setup lingkungan dan laporan praktikum 01`)
+* **Hash Commit**: `369fa94`
 
 ## Checklist
 - [x] Identitas Laporan Lengkap
