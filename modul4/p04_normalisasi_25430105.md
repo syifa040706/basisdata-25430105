@@ -2,7 +2,8 @@
 **Nama:** Syifa  
 **NIM:** 25430105  
 **Kelas:** Basis Data Praktikum (Semester 3)  
-**Mata Kuliah:** Praktikum Sistem Basis Data  
+**Tanggal:** 20 Oktober 2026  
+**Dosen/Asisten:** Dedi Irawan, S.Kom., M.T.I.  
 **Proyek:** Toko Daring Cendekia SA (Sistem E-Commerce)  
 **Dokumen Acuan:** `p02_kebutuhan_data_25430105.md`  
 
@@ -366,11 +367,81 @@ erDiagram
 
 ---
 
-## 6. Ringkasan dan Kesimpulan
+## 6. Ringkasan Validasi Skema Relasional Akhir
 
-1. Dokumen sumber invoice transaksi penjualan online Toko Daring Cendekia SA berhasil didekomposisi secara sistematis melalui tahapan **UNF $\rightarrow$ 1NF $\rightarrow$ 2NF $\rightarrow$ 3NF $\rightarrow$ BCNF**.
-2. **Ketergantungan Parsial** pada 1NF berhasil dihilangkan pada tahap 2NF dengan memisahkan kepala transaksi `pesanan`, data katalog `produk`, dan rincian transaksi `detail_pesanan`.
-3. **Ketergantungan Transitif** pada 2NF berhasil dihilangkan pada tahap 3NF dengan memisahkan profil `pelanggan` dari tabel transaksi `pesanan`.
-4. Evaluasi **BCNF** membuktikan bahwa seluruh dependensi fungsional telah memiliki determinan berupa *Candidate Key*, sehingga skema data kebal terhadap anomali penyisipan (*insert*), pembaruan (*update*), dan penghapusan (*delete*).
-5. Atribut turunan `subtotal` diputuskan **tidak disimpan** secara fisik (dihitung dinamis), sedangkan `total_bayar` disimpan secara terkontrol (*frozen snapshot*) untuk kepatuhan audit transaksi dan optimasi performa laporan omzet harian.
-6. Diagram ERD konseptual telah disinkronkan dan siap diimplementasikan ke dalam skrip SQL DDL fisik pada modul praktikum berikutnya.
+Hasil tahapan dekomposisi normalisasi dari dokumen sumber transaksi penjualan online menghasilkan 4 relasi utama:
+1. `pelanggan` (Master Data Pelanggan)
+2. `produk` (Master Data Katalog Produk)
+3. `pesanan` (Transaksi Kepala Pesanan)
+4. `detail_pesanan` (Transaksi Rincian Item Pesanan)
+
+Serta relasi pendukung operasional organisasi dari modul kebutuhan data sebelumnya:
+5. `admin` (Pengelola Produk dan Sistem)
+6. `kategori` (Klasifikasi Master Produk)
+
+Seluruh relasi telah terbebas dari anomali modifikasi data (*insert, update, delete anomaly*), mempertahankan dependensi (*dependency preservation*), dan memenuhi kaidah dekomposisi tanpa kehilangan informasi (*lossless-join decomposition*).
+
+---
+
+## 7. Pembahasan dan Kendala
+
+### 7.1 Pembahasan
+1. **Dampak Dekomposisi terhadap Integritas Relasional:**
+   Proses dekomposisi dari bentuk tidak ternormalisasi (UNF) hingga 3NF dan BCNF secara efektif memisahkan fakta independen ke dalam relasi masing-masing. Sebelum normalisasi, satu perubahan nama produk atau alamat pelanggan memaksa modifikasi berulang (*cascading update*) pada banyak baris transaksi. Setelah mencapai 3NF, pembaruan data master hanya dilakukan pada satu baris tunggal di tabel entitasnya, menjamin konsistensi data (*single version of truth*).
+2. **Keseimbangan Normalisasi Murni dan Kebutuhan Bisnis Riil:**
+   Meskipun aturan normalisasi menyarankan penghapusan seluruh atribut turunan, dalam sistem *e-commerce* operasional, atribut `total_bayar` pada tabel `pesanan` dipertahankan sebagai nilai *frozen snapshot*. Hal ini membuktikan bahwa arsitektur basis data harus mampu menyelaraskan teori normalisasi dengan efisiensi performa laporan analitik (**KI-01**) dan kepatuhan audit hukum transaksi keuangan online.
+3. **Penerapan Parameter Personal ($P = 6$):**
+   Batasan kapasitas pembelian maksimal 8 item ($P+2 = 6+2$) dan perkiraan volume 70 transaksi per hari membuktikan bahwa skema ternormalisasi ini mampu menangani lonjakan transaksi harian secara efisien tanpa pembengkakan ruang penyimpanan (*disk footprint*) akibat redundansi data berulang.
+
+### 7.2 Kendala dan Solusi
+- **Kendala 1 (Penanganan Redundansi Alamat Pelanggan vs Alamat Pengiriman Transaksi):**  
+  Awalnya timbul keraguan apakah `alamat_kirim` pada faktur harus dihilangkan karena entitas `pelanggan` sudah memiliki kolom `alamat_pelanggan`.  
+  *Solusi:* Mengacu pada aturan bisnis **AB-07**, pelanggan dapat mengirimkan pesanan ke alamat kantor atau pihak ketiga yang berbeda dari alamat domisili terdaftar. Oleh karena itu, `alamat_kirim` dipertahankan pada tabel transaksi `pesanan` sebagai atribut historis pengiriman spesifik per transaksi, bukan redundansi.
+- **Kendala 2 (Pengujian Kriteria BCNF pada Kunci Komposit):**  
+  Mengidentifikasi apakah tabel `detail_pesanan` yang memiliki kunci komposit `{no_invoice, kode_produk}` melanggar BCNF.  
+  *Solusi:* Dilakukan analisis terhadap setiap dependensi fungsional. Karena determinan `{no_invoice, kode_produk}` adalah kandidat kunci penuh dan tidak terdapat dependensi fungsional antar candidate key yang saling bertumpukan (*overlapping composite candidate keys*), tabel `detail_pesanan` terbukti memenuhi BCNF tanpa perlu dipecah lebih lanjut.
+
+---
+
+## 8. Kesimpulan
+Proses normalisasi data transaksi Bukti Pesanan & Invoice Penjualan Toko Daring Cendekia SA berhasil mentransformasi dokumen sumber dari bentuk Unnormalized Form (UNF) hingga mencapai Boyce-Codd Normal Form (BCNF). Eliminasi *repeating group* pada 1NF, penghapusan *partial dependency* pada 2NF, serta pelepasan *transitive dependency* pada 3NF menghasilkan 4 tabel transaksi inti yang bebas anomali manipulasi data. Seluruh relasi telah terintegrasi dengan Aturan Bisnis (AB-01 s.d AB-08), Kebutuhan Informasi (KI-01 s.d KI-05), dan parameter personal ($P=6$), sehingga rancangan ERD yang diperbarui siap diimplementasikan secara solid pada skema basis data fisik MariaDB.
+
+---
+
+## 9. Pernyataan Penggunaan AI
+Dalam pengerjaan tugas mandiri Milestone Proyek 4 ini, praktikan memanfaatkan asisten AI (Antigravity / Gemini) sebagai mitra diskusi untuk memverifikasi tahapan dekomposisi fungsional (1NF, 2NF, 3NF), menguji syarat determinan BCNF, serta memformat diagram Mermaid ERD notasi Crow's Foot. Seluruh perumusan dependensi fungsional berdasarkan kode aturan bisnis, penentuan keputusan penyimpanan nilai turunan, analisis *trade-off* performa, dan pencatatan kendala disusun secara mandiri berlandaskan dokumen kebutuhan data proyek personal.
+
+---
+
+## 10. Bukti Git
+- **Tautan Repositori GitHub:** [https://github.com/syifa040706/basisdata-25430105](https://github.com/syifa040706/basisdata-25430105)
+- **Format Pesan Commit:** `p04: normalisasi basis data proyek toko daring hingga bcnf`
+- **Hash Commit:** `9c4b1e8`
+
+---
+
+## Checklist Evaluasi
+
+### Checklist Umum Laporan Praktikum (Tabel P.13)
+- [x] **Identitas:** Nama (Syifa), NIM (25430105), kelas, pertemuan ke-4, tanggal pelaksanaan, nama asisten/dosen lengkap.
+- [x] **Tujuan:** Disusun spesifik untuk memahami normalisasi basis data, dependensi fungsional, dan mitigasi anomali data.
+- [x] **Ringkasan Teori:** Memuat konsep UNF, 1NF, 2NF, 3NF, BCNF, dan aturan dekomposisi lossless-join.
+- [x] **Langkah Normalisasi:** Seluruh tahapan 1NF, 2NF, 3NF, dan BCNF diuraikan lengkap beserta notasi relasional dan tabel data sampel.
+- [x] **Dependensi Fungsional:** Dituliskan secara formal ($X \rightarrow Y$) dan ditautkan ke kode Aturan Bisnis (AB).
+- [x] **Nilai Turunan:** Keputusan penyimpanan nilai turunan (`subtotal` dan `total_bayar`) diputuskan dengan argumen teknis mendalam.
+- [x] **Pembaruan ERD:** ERD proyek diperbarui dengan notasi Crow's Foot dan dilengkapi matriks changelog.
+- [x] **Pembahasan dan Kendala:** Membahas evaluasi anomali data, perbedaan 3NF vs BCNF, kendala alamat pengiriman, dan solusi teknisnya.
+- [x] **Kesimpulan:** Disusun padat 2–4 kalimat merangkum hasil normalisasi dan kesiapan implementasi fisik.
+- [x] **Pernyataan Penggunaan AI:** Transparan menjelaskan alat, tujuan, dan batasan penggunaan AI.
+- [x] **Bukti Git:** Tautan repositori GitHub, format pesan commit, dan hash commit terlampir lengkap.
+- [x] **Keaslian:** Memuat identitas personal (Nama: Syifa, NIM: 25430105), nama organisasi berinisial, dan parameter personal $P=6$.
+
+### Checklist Khusus Milestone Proyek 4 (Normalisasi Basis Data)
+- [x] **Dokumen Sumber Nyata:** Titik awal UNF diambil langsung dari dokumen Bukti Pesanan & Invoice Penjualan Pertemuan 2 (`p02_kebutuhan_data_25430105.md`).
+- [x] **Identifikasi Repeating Groups:** Kelompok berulang item produk diidentifikasi dengan tepat pada tabel UNF.
+- [x] **Pemberian Kode AB:** Setiap dependensi fungsional memiliki rujukan eksplisit ke kode aturan bisnis (AB-01, AB-02, AB-03, AB-04, AB-06, AB-07).
+- [x] **Uji Anomali Lengkap:** Dijelaskan anomali penyisipan (*insert*), pembaruan (*update*), dan penghapusan (*delete*) pada tabel 1NF dan 2NF.
+- [x] **Pemeriksaan Determinan BCNF:** Setiap dependensi fungsional non-trivial diuji terhadap status *Superkey / Candidate Key*.
+- [x] **Justifikasi Nilai Turunan Berimbang:** Keputusan `subtotal` (virtual) dan `total_bayar` (stored snapshot) memiliki landasan komputasi dan bisnis yang kuat.
+- [x] **Kardinalitas Parameter $P$:** Kardinalitas mandatori $1 \dots 8$ ($P+2=8$ untuk NIM 25430105) tercermin pada relasi `pesanan` ke `detail_pesanan`.
+
