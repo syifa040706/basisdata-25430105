@@ -416,7 +416,7 @@ Dalam pengerjaan tugas mandiri Milestone Proyek 4 ini, praktikan memanfaatkan as
 ## 10. Bukti Git
 - **Tautan Repositori GitHub:** [https://github.com/syifa040706/basisdata-25430105](https://github.com/syifa040706/basisdata-25430105)
 - **Format Pesan Commit:** `p04: normalisasi basis data proyek toko daring hingga bcnf`
-- **Hash Commit:** `9c4b1e8`
+- **Hash Commit:** `68e66ce`
 
 ---
 
